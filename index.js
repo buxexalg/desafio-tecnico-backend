@@ -5,6 +5,9 @@ app.use(bodyparser());
 
 const medicos = [];
 
+const consultas = [];
+const consultasFinalizadas = [];
+
 const sucessoRequisicao = (ctx, codigoREST, conteudo) => {
     ctx.status = codigoREST;
     ctx.body = {
@@ -23,17 +26,17 @@ const falhaRequisicao = (ctx, codigoREST, mensagem) => {
     }
 }
 
-const cadastrarMedico = (especialidade,nome = '') => {
-    if (!especialidade || especialidade.trim() === '' || especialidade === null) {
+const cadastrarMedico = (medicoJSON) => {
+    if (!medicoJSON.especialidade || medicoJSON.especialidade.trim() === '' || medicoJSON.especialidade === null) {
         console.log('400 - Adicione pelo menos uma especialidade para cadastrar um médico.')
         return false;
     } else {
         let indexMedico;
-        (medicos.length === 0) ? indexMedico = 1 : indexMedico = medicos.length + 1;
+        (medicos.length === 0) ? indexMedico = 1 : indexMedico = medicos[length-1].id + 1;
         const novoMedico = {
             id : indexMedico,
-            nome: nome,
-            especialidade: especialidade,
+            nome: medicoJSON.nome,
+            especialidade: medicoJSON.especialidade,
         }
         medicos.push(novoMedico);
         return novoMedico;
@@ -67,7 +70,7 @@ const atualizarMedico = (id, medicoJSON) => {
             const index = medicos.indexOf(obterMedico(id));
             medicos[index] = {
                 id: medicos[index].id,
-                nome: medicoJSON.nome,
+                nome: medicoJSON.nome ? medicoJSON.nome : '',
                 especialidade: medicoJSON.especialidade,
             }
             return medicos[index]
@@ -87,10 +90,104 @@ const removerMedico = (id) => {
     }
 }
 
+const cadastrarConsulta = (consultaJSON) => {
+    if (!consultaJSON.especie || consultaJSON.especie.trim() === '' || consultaJSON.especie === null) {
+        console.log('400 - Insira corretamente todos os dados necessários.');
+        return false;
+    } else if (!consultaJSON.raca || consultaJSON.raca.trim() === '' || consultaJSON.raca === null) {
+        console.log('400 - Insira corretamente todos os dados necessários.');
+        return false;
+    } else if (typeof cachorro.urgente !== 'boolean' || consultaJSON.especie === null) {
+        console.log('400 - Insira corretamente todos os dados necessários.');
+        return false;
+    } else if (!consultaJSON.atendimento || consultaJSON.atendimento.trim() === '' || consultaJSON.atendimento === null) {
+        console.log('400 - Insira corretamente todos os dados necessários.');
+        return false;
+    }
 
+    let indexConsulta;
+    (consultas.length === 0) ? indexConsulta = 1 : indexConsulta = consultas[consultas.length-1].id + 1;
+    const novaConsulta = {
+            id : indexConsulta,
+            especie: consultaJSON.especie,
+            raca: consultaJSON.raca,
+            urgente: consultaJSON.urgente,
+            atendimento: consultaJSON.atendimento,
+            status: "pendente"
+        }
+    consultas.push(novaConsulta);
+    return novaConsulta;
+}
+
+const obterConsulta = (id) => {
+    for (consulta of consultas) {
+        if (consultas[id-1] === consulta) return consulta; 
+    }
+    console.log('404 - ID não encontrado.');
+    return false
+}
+
+const proximaConsulta = (id) => {
+    const proximoMedico = obterMedico(id);
+    if(!proximoMedico) {
+        return false
+    } else {
+        for(consultaUrgente of consultas) {
+            if (consultaUrgente.urgente) {
+                if (consultaUrgente.atendimento === proximoMedico.especialidade) {
+                    return [proximoMedico, consultaUrgente];
+                }
+            }
+        }
+        for(consultaNaoUrgente of consultas) {
+            if (consultaNaoUrgente.atendimento === proximoMedico.especialidade) {
+                return [proximoMedico, consultaNaoUrgente];
+            }
+        }
+
+        console.log('404 - Não foram encontrados atendimentos para este médico.');
+        return false;
+    }
+}
+
+const listarConsultas = () => {
+    return consultas;
+}
+
+const consultaRealizada = (id) => {
+    const indexConsulta = consultas.indexOf(obterConsulta(id));
+    consultas[indexConsulta].status = 'ATENDIDO';
+
+    consultasFinalizadas.push(consultas[indexConsulta]);
+    consultas.splice(indexConsulta, 1);
+
+    return consultasFinalizadas[consultasFinalizadas.length-1];
+}
+
+const consultaCancelada = (id) => {
+    const indexConsulta = consultas.indexOf(obterConsulta(id));
+    consultas[indexConsulta].status = 'CANCELADO';
+
+    consultasFinalizadas.push(consultas[indexConsulta]);
+    consultas.splice(indexConsulta, 1);
+
+    return consultasFinalizadas[consultasFinalizadas.length-1];
+}
+
+const listarFinalizadas = () => {
+    return consultasFinalizadas;
+}
 
 app.use((ctx) => {
 
 })
 
 app.listen(8081, () => console.log("API rodando na porta 8081"))
+
+/* 200 OK
+201 Conteúdo criado
+
+400 - Requisição mal formada
+401 - Não autorizado
+403 - Proibido
+404 - Not Found */
