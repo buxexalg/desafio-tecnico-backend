@@ -1,12 +1,18 @@
 const Koa = require('koa');
 const bodyparser = require("koa-bodyparser");
+const fs = require('fs');
 const app = new Koa();
 app.use(bodyparser());
 
 const medicos = [];
-
 const consultas = [];
 const consultasFinalizadas = [];
+
+const err = (err) => {
+    if (err) {
+        console.log(err);
+    }
+}
 
 const sucessoRequisicao = (ctx, codigoREST, conteudo) => {
     ctx.status = codigoREST;
@@ -32,13 +38,14 @@ const cadastrarMedico = (medicoJSON) => {
         return false;
     } else {
         let indexMedico;
-        (medicos.length === 0) ? indexMedico = 1 : indexMedico = medicos[length-1].id + 1;
+        (medicos.length === 0) ? indexMedico = 1 : indexMedico = medicos[medicos.length-1].id + 1;
         const novoMedico = {
             id : indexMedico,
             nome: medicoJSON.nome,
             especialidade: medicoJSON.especialidade,
         }
         medicos.push(novoMedico);
+        fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
         return novoMedico;
     }
 }
@@ -73,6 +80,7 @@ const atualizarMedico = (id, medicoJSON) => {
                 nome: medicoJSON.nome ? medicoJSON.nome : '',
                 especialidade: medicoJSON.especialidade,
             }
+            fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
             return medicos[index]
         }
     }
@@ -85,7 +93,7 @@ const removerMedico = (id) => {
     } else {
         const index = medicos.indexOf(obterMedico(id));
         medicos.splice(index, 1);
-    
+        fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
         return medicos
     }
 }
@@ -97,7 +105,7 @@ const cadastrarConsulta = (consultaJSON) => {
     } else if (!consultaJSON.raca || consultaJSON.raca.trim() === '' || consultaJSON.raca === null) {
         console.log('400 - Insira corretamente todos os dados necessários.');
         return false;
-    } else if (typeof cachorro.urgente !== 'boolean' || consultaJSON.especie === null) {
+    } else if (typeof consultaJSON.urgente !== 'boolean' || consultaJSON.especie === null) {
         console.log('400 - Insira corretamente todos os dados necessários.');
         return false;
     } else if (!consultaJSON.atendimento || consultaJSON.atendimento.trim() === '' || consultaJSON.atendimento === null) {
@@ -116,6 +124,7 @@ const cadastrarConsulta = (consultaJSON) => {
             status: "pendente"
         }
     consultas.push(novaConsulta);
+    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
     return novaConsulta;
 }
 
@@ -161,6 +170,9 @@ const consultaRealizada = (id) => {
     consultasFinalizadas.push(consultas[indexConsulta]);
     consultas.splice(indexConsulta, 1);
 
+    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
+    fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
+
     return consultasFinalizadas[consultasFinalizadas.length-1];
 }
 
@@ -171,6 +183,9 @@ const consultaCancelada = (id) => {
     consultasFinalizadas.push(consultas[indexConsulta]);
     consultas.splice(indexConsulta, 1);
 
+    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
+    fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
+    
     return consultasFinalizadas[consultasFinalizadas.length-1];
 }
 
