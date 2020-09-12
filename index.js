@@ -14,7 +14,7 @@ const err = (err) => {
     }
 }
 
-const sucessoRequisicao = (ctx, codigoREST, conteudo) => {
+const sucessoRequisicao = (ctx,  conteudo, codigoREST = 200) => {
     ctx.status = codigoREST;
     ctx.body = {
         status: 'sucesso',
@@ -22,7 +22,7 @@ const sucessoRequisicao = (ctx, codigoREST, conteudo) => {
     }
 }
 
-const falhaRequisicao = (ctx, codigoREST, mensagem) => {
+const falhaRequisicao = (ctx, mensagem, codigoREST = 404) => {
     ctx.status = codigoREST;
     ctx.body = {
         status:  'erro',
@@ -32,9 +32,10 @@ const falhaRequisicao = (ctx, codigoREST, mensagem) => {
     }
 }
 
-const cadastrarMedico = (medicoJSON) => {
+const cadastrarMedico = (ctx) => {
+    const medicoJSON = ctx.request.body;
     if (!medicoJSON.especialidade || medicoJSON.especialidade.trim() === '' || medicoJSON.especialidade === null) {
-        console.log('400 - Adicione pelo menos uma especialidade para cadastrar um médico.')
+        falhaRequisicao(ctx,'Adicione pelo menos uma especialidade para cadastrar um médico.', 400);
         return false;
     } else {
         let indexMedico;
@@ -54,27 +55,28 @@ const listarMedicos = () => {
     return medicos;
 }
 
-const obterMedico = (id) => {
-    for (medico of medicos) {
-        if (medicos[id-1] === medico) return medico; 
+const obterMedico = (id, ctx) => {
+    for (let medico of medicos) {
+        if (medico.id === parseInt(id, 10)) return medico; 
     }
-    console.log('404 - ID não encontrado.');
+    falhaRequisicao(ctx, 'ID não encontrado.', 404)
     return false
 }
 
-const atualizarMedico = (id, medicoJSON) => {
+const atualizarMedico = (id, ctx) => {
+    const medicoJSON = ctx.request.body;
     if (medicoJSON.id) {
-        console.log('403 - Não é possível alterar o valor de ID. Insira os dados do médico sem o ID.')
+        falhaRequisicao(ctx, 'Não é possível alterar o valor de ID. Insira os dados do médico sem o ID.', 403)
         return false;
     } else if (!medicoJSON.especialidade || !medicoJSON.especialidade.trim() === '' || !medicoJSON.especialidade === null) {
-        console.log('400 - Insira uma propriedade válida para atualização.');
+        falhaRequisicao(ctx, 'Insira uma propriedade válida para atualização.', 400)
         return false;
     } else {
-        if (!obterMedico(id)) {
-            console.log('404 - ID não encontrado.');
+        if (!obterMedico(id, ctx)) {
+            falhaRequisicao(ctx, 'ID não encontrado.', 404)
             return false;
         } else {
-            const index = medicos.indexOf(obterMedico(id));
+            const index = medicos.indexOf(obterMedico(id, ctx));
             medicos[index] = {
                 id: medicos[index].id,
                 nome: medicoJSON.nome ? medicoJSON.nome : '',
@@ -86,30 +88,32 @@ const atualizarMedico = (id, medicoJSON) => {
     }
 }
 
-const removerMedico = (id) => {
-    if (!obterMedico(id)) {
-        console.log('404 - ID não encontrado.');
+const removerMedico = (id, ctx) => {
+    if (!obterMedico(id, ctx)) {
+        falhaRequisicao(ctx, 'ID não encontrado.', 404)
         return false;
     } else {
-        const index = medicos.indexOf(obterMedico(id));
+        const medicoRemovido = obterMedico(id, ctx);
+        const index = medicos.indexOf(obterMedico(id, ctx));
         medicos.splice(index, 1);
         fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
-        return medicos
+        return medicoRemovido
     }
 }
 
-const cadastrarConsulta = (consultaJSON) => {
-    if (!consultaJSON.especie || consultaJSON.especie.trim() === '' || consultaJSON.especie === null) {
-        console.log('400 - Insira corretamente todos os dados necessários.');
+const cadastrarConsulta = (ctx) => {
+    const consultaJSON = ctx.request.body;
+    if (!consultaJSON.nome || consultaJSON.nome.trim() === '' || consultaJSON.nome === null) {
+        falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     } else if (!consultaJSON.raca || consultaJSON.raca.trim() === '' || consultaJSON.raca === null) {
-        console.log('400 - Insira corretamente todos os dados necessários.');
+        falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     } else if (typeof consultaJSON.urgente !== 'boolean' || consultaJSON.especie === null) {
-        console.log('400 - Insira corretamente todos os dados necessários.');
+        falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     } else if (!consultaJSON.atendimento || consultaJSON.atendimento.trim() === '' || consultaJSON.atendimento === null) {
-        console.log('400 - Insira corretamente todos os dados necessários.');
+        falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     }
 
@@ -117,6 +121,7 @@ const cadastrarConsulta = (consultaJSON) => {
     (consultas.length === 0) ? indexConsulta = 1 : indexConsulta = consultas[consultas.length-1].id + 1;
     const novaConsulta = {
             id : indexConsulta,
+            nome: consultaJSON.nome,
             especie: consultaJSON.especie,
             raca: consultaJSON.raca,
             urgente: consultaJSON.urgente,
@@ -128,33 +133,33 @@ const cadastrarConsulta = (consultaJSON) => {
     return novaConsulta;
 }
 
-const obterConsulta = (id) => {
-    for (consulta of consultas) {
-        if (consultas[id-1] === consulta) return consulta; 
+const obterConsulta = (id, ctx) => {
+    for (let consulta of consultas) {
+        if (consulta.id === parseInt(id, 10)) return consulta; 
     }
-    console.log('404 - ID não encontrado.');
+    falhaRequisicao(ctx, 'ID não encontrado.', 404)
     return false
 }
 
-const proximaConsulta = (id) => {
-    const proximoMedico = obterMedico(id);
+const proximaConsulta = (id, ctx) => {
+    const proximoMedico = obterMedico(id, ctx);
     if(!proximoMedico) {
-        return false
+        falhaRequisicao(ctx, 'ID não encontrado.', 404)
+        return false;
     } else {
-        for(consultaUrgente of consultas) {
+        for(let consultaUrgente of consultas) {
             if (consultaUrgente.urgente) {
                 if (consultaUrgente.atendimento === proximoMedico.especialidade) {
                     return [proximoMedico, consultaUrgente];
                 }
             }
         }
-        for(consultaNaoUrgente of consultas) {
+        for(let consultaNaoUrgente of consultas) {
             if (consultaNaoUrgente.atendimento === proximoMedico.especialidade) {
                 return [proximoMedico, consultaNaoUrgente];
             }
         }
-
-        console.log('404 - Não foram encontrados atendimentos para este médico.');
+        falhaRequisicao(ctx, 'Não foram encontrados atendimentos para este médico.', 404)
         return false;
     }
 }
@@ -163,8 +168,11 @@ const listarConsultas = () => {
     return consultas;
 }
 
-const consultaRealizada = (id) => {
-    const indexConsulta = consultas.indexOf(obterConsulta(id));
+const consultaRealizada = (id, ctx) => {
+    const indexConsulta = consultas.indexOf(obterConsulta(id, ctx));
+    if (indexConsulta === false || indexConsulta === -1) {
+        return false
+    } else {
     consultas[indexConsulta].status = 'ATENDIDO';
 
     consultasFinalizadas.push(consultas[indexConsulta]);
@@ -174,10 +182,15 @@ const consultaRealizada = (id) => {
     fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
 
     return consultasFinalizadas[consultasFinalizadas.length-1];
+    }
 }
 
-const consultaCancelada = (id) => {
-    const indexConsulta = consultas.indexOf(obterConsulta(id));
+const consultaCancelada = (id, ctx) => {
+    const indexConsulta = consultas.indexOf(obterConsulta(id, ctx));
+    console.log(indexConsulta);
+    if (indexConsulta === false || indexConsulta === -1) {
+        return false
+    } else {
     consultas[indexConsulta].status = 'CANCELADO';
 
     consultasFinalizadas.push(consultas[indexConsulta]);
@@ -186,7 +199,9 @@ const consultaCancelada = (id) => {
     fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
     fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
     
+
     return consultasFinalizadas[consultasFinalizadas.length-1];
+    }
 }
 
 const listarFinalizadas = () => {
@@ -194,15 +209,147 @@ const listarFinalizadas = () => {
 }
 
 app.use((ctx) => {
+    const body = ctx.body;
+    const path = ctx.url;
+    const method = ctx.method;
+    const subPath = path.split('/');
 
+    if (path === "/medicos") {
+        switch (method) {
+            case 'GET':
+                sucessoRequisicao(ctx, listarMedicos(), 200);
+                break;
+            
+            case 'POST':
+                const medicoCriado = cadastrarMedico(ctx);
+
+                if (medicoCriado) {
+                    sucessoRequisicao(ctx, medicoCriado, 201);
+                }
+                break;
+            
+            default:
+                falhaRequisicao(ctx, 'Método não permitido' , 405);
+                break;
+        }
+    } else 
+    if (path.includes("/medicos/")) {
+        if (subPath[1] === "medicos") {
+            if (!isNaN(subPath[2])) {
+                switch (method) {
+                    case 'GET':
+                        obterMedico(subPath[2], ctx) ? sucessoRequisicao(ctx, obterMedico(subPath[2], ctx), 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                        break;
+
+                    case 'PUT':
+                        const medicoAtualizado = atualizarMedico(subPath[2], ctx);
+                        medicoAtualizado ? sucessoRequisicao(ctx, medicoAtualizado, 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                        break;
+                    
+                    case 'DELETE':
+                        removerMedico(ctx, subPath[2]) ? sucessoRequisicao(ctx, removerMedico(subPath[2], ctx), 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                        break;
+
+                    default:
+                        falhaRequisicao(ctx, 'Método não permitido' , 405);
+                        break;    
+                }
+            } else {
+                falhaRequisicao(ctx, 'Requisição mal formada. Insira um ID que seja um número.' , 400);
+            }
+        } else {
+            falhaRequisicao(ctx, 'Não encontrado.' , 404);
+        }
+    } else if (path === "/consultas") {
+        switch (method) {
+            case 'GET':
+                sucessoRequisicao(ctx, listarConsultas(), 200);
+                break;
+            case 'POST':
+                const consultaCriada = cadastrarConsulta(ctx);
+                if (consultaCriada) {
+                    sucessoRequisicao(ctx, consultaCriada, 201);
+                }
+                break;
+            default:
+                falhaRequisicao(ctx, 'Método não permitido' , 405);
+                break;
+        }
+    } else if (path.includes("/consultas/")) {
+        if (subPath[1] === "consultas") {
+            switch (true) {
+                case (!isNaN(subPath[2])):
+                    if (method === 'GET') {
+                        obterConsulta(subPath[2], ctx) ? sucessoRequisicao(ctx, obterConsulta(subPath[2], ctx), 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                        break;
+                    } else {
+                        falhaRequisicao(ctx, 'Método não permitido' , 405);
+                        break;
+                    }
+
+                case (subPath[2] === 'atendimento'):
+                    if (!isNaN(subPath[3])) {
+                        if (method === 'GET') {
+                            proximaConsulta(subPath[3], ctx) ? sucessoRequisicao(ctx, proximaConsulta(subPath[3], ctx), 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                            break;
+                        } else {
+                            falhaRequisicao(ctx, 'Método não permitido' , 405);
+                            break;
+                        }
+                    } else {
+                        falhaRequisicao(ctx, 'Requisição mal formada. Insira um ID que seja um número.' , 400);
+                        break;
+                    }
+
+                case (subPath[2] === 'realizada'):
+                    if (!isNaN(subPath[3])) {
+                        if (method === 'PUT') {
+                            const consultaFeita = consultaRealizada(subPath[3], ctx);
+                            consultaFeita ? sucessoRequisicao(ctx, consultaFeita, 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                            break;
+                        } else {
+                            falhaRequisicao(ctx, 'Método não permitido' , 405);
+                            break;
+                        }
+                    } else {
+                        falhaRequisicao(ctx, 'Requisição mal formada. Insira um ID que seja um número.' , 400);
+                        break;
+                    }
+
+                case (subPath[2] === 'cancelada'):
+                    if (!isNaN(subPath[3])) {
+                        if (method === 'PUT') {
+                            const cancelamento = consultaCancelada(subPath[3], ctx);
+                            cancelamento ? sucessoRequisicao(ctx, cancelamento, 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                            break;
+                        } else {
+                            falhaRequisicao(ctx, 'Método não permitido' , 405);
+                            break;
+                        }
+                    } else {
+                        falhaRequisicao(ctx, 'Requisição mal formada. Insira um ID que seja um número.' , 400);
+                        break;
+                    }
+                
+                case (subPath[2] === 'finalizadas'):
+                    if (method === 'GET') {
+                        sucessoRequisicao(ctx, listarFinalizadas(), 200);
+                        break;
+                    } else {
+                        falhaRequisicao(ctx, 'Método não permitido' , 405);
+                        break;
+                    }
+                
+                default:
+                    falhaRequisicao(ctx, 'Não encontrado.' , 404);
+                    break;
+            }
+        } else {
+            falhaRequisicao(ctx, 'Não encontrado.' , 404);
+        }
+    } else {
+        falhaRequisicao(ctx, 'Não encontrado.' , 404);
+    }
 })
 
 app.listen(8081, () => console.log("API rodando na porta 8081"))
-
-/* 200 OK
-201 Conteúdo criado
-
-400 - Requisição mal formada
-401 - Não autorizado
-403 - Proibido
-404 - Not Found */
