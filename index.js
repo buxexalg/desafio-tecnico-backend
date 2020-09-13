@@ -46,7 +46,7 @@ const cadastrarMedico = (ctx) => {
             especialidade: medicoJSON.especialidade,
         }
         medicos.push(novoMedico);
-        fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
+        fs.writeFileSync('./writeFile/medicos.json', JSON.stringify(medicos, null, 2));
         return novoMedico;
     }
 }
@@ -82,7 +82,7 @@ const atualizarMedico = (id, ctx) => {
                 nome: medicoJSON.nome ? medicoJSON.nome : '',
                 especialidade: medicoJSON.especialidade,
             }
-            fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
+            fs.writeFileSync('./writeFile/medicos.json', JSON.stringify(medicos, null, 2));
             return medicos[index]
         }
     }
@@ -96,7 +96,7 @@ const removerMedico = (id, ctx) => {
         const medicoRemovido = obterMedico(id, ctx);
         const index = medicos.indexOf(obterMedico(id, ctx));
         medicos.splice(index, 1);
-        fs.writeFileSync('./medicos.json', JSON.stringify(medicos, null, 2));
+        fs.writeFileSync('./writeFile/medicos.json', JSON.stringify(medicos, null, 2));
         return medicoRemovido
     }
 }
@@ -109,7 +109,7 @@ const cadastrarConsulta = (ctx) => {
     } else if (!consultaJSON.raca) {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
-    } else if (!consultaJSON.urgente !== 'boolean') {
+    } else if (!consultaJSON.urgente === Boolean) {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     } else if (!consultaJSON.atendimento) {
@@ -129,7 +129,7 @@ const cadastrarConsulta = (ctx) => {
             status: "pendente"
         }
     consultas.push(novaConsulta);
-    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
+    fs.writeFileSync('./writeFile/consultas.json', JSON.stringify(consultas, null, 2));
     return novaConsulta;
 }
 
@@ -178,8 +178,8 @@ const consultaRealizada = (id, ctx) => {
     consultasFinalizadas.push(consultas[indexConsulta]);
     consultas.splice(indexConsulta, 1);
 
-    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
-    fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
+    fs.writeFileSync('./writeFile/consultas.json', JSON.stringify(consultas, null, 2));
+    fs.writeFileSync('./writeFile/consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
 
     return consultasFinalizadas[consultasFinalizadas.length-1];
     }
@@ -196,8 +196,8 @@ const consultaCancelada = (id, ctx) => {
     consultasFinalizadas.push(consultas[indexConsulta]);
     consultas.splice(indexConsulta, 1);
 
-    fs.writeFileSync('./consultas.json', JSON.stringify(consultas, null, 2));
-    fs.writeFileSync('./consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
+    fs.writeFileSync('./writeFile/consultas.json', JSON.stringify(consultas, null, 2));
+    fs.writeFileSync('./writeFile/consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
     
 
     return consultasFinalizadas[consultasFinalizadas.length-1];
