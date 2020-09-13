@@ -1,0 +1,293 @@
+{
+	"info": {
+		"_postman_id": "951d48db-812e-4763-8617-3fdb996283b3",
+		"name": "API-Desafio-Tecnico-Backend",
+		"description": "Endpoints referentes ao desafio técnico de back-end da Cubos.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Requisições dos Médicos",
+			"item": [
+				{
+					"name": "Listagem de médicos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/medicos",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"medicos"
+							]
+						},
+						"description": "Retorna todos os médicos cadastrados no sistema."
+					},
+					"response": []
+				},
+				{
+					"name": "Listagem de médico específico",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/medicos/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"medicos",
+								"1"
+							]
+						},
+						"description": "Retorna as informações de um médico em específico com base no ID informado na requisição."
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastro de médico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"nome\" : \"Lucas Gabriel\",\r\n\t\"especialidade\" : \"Endocrinologista\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/medicos",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"medicos"
+							]
+						},
+						"description": "Recebe um JSON como entrada contendo nome e especialidade do médico e retorna o cadastro do mesmo. Especialidade é um campo obrigatório."
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar informações do médico",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"nome\" : \"Fábio Gabriel\",\r\n\t\"especialidade\" : \"Cardiologista\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/medicos/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"medicos",
+								"1"
+							]
+						},
+						"description": "Através de um JSON de entrada e o ID do médico em questão, é possível atualizar os dados de cadastro de um médico. O campo de especialidade é obrigatório."
+					},
+					"response": []
+				},
+				{
+					"name": "Apagar médico",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/medicos/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"medicos",
+								"1"
+							]
+						},
+						"description": "A partir do ID do médico, deleta o registro do mesmo do sistema."
+					},
+					"response": []
+				}
+			],
+			"description": "Pasta que agrupa todos os endpoints relacionados aos médicos.",
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Requisições Consultas",
+			"item": [
+				{
+					"name": "Listagem de consultas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/consultas",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas"
+							]
+						},
+						"description": "Retorna a lista completa de consultas, divididas entre pendentes e canceladas/finalizadas."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar consulta",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/consultas/2",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas",
+								"2"
+							]
+						},
+						"description": "Retorna informações de uma consulta específica através do seu ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Próxima consulta",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/consultas/atendimento/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas",
+								"atendimento",
+								"1"
+							]
+						},
+						"description": "Através do ID da requisição, apresenta o próximo atendimento com base na especialidade do médico."
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar consulta",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n      \"nome\": \"Billy\",\r\n      \"especie\": \"Cachorro\",\r\n      \"raca\": \"Dobberman\",\r\n      \"urgente\": true,\r\n      \"atendimento\": \"Cardiologista\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/consultas",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas"
+							]
+						},
+						"description": "Recebe um JSON como entrada contendo nome, especie, raça, urgência e o tipo de atendimento e retorna o cadastro do mesmo."
+					},
+					"response": []
+				},
+				{
+					"name": "Consulta realizada",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/consultas/realizada/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas",
+								"realizada",
+								"1"
+							]
+						},
+						"description": "Através do ID da consulta dada na requisição a marca como REALIZADA."
+					},
+					"response": []
+				},
+				{
+					"name": "Consulta cancelada",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "localhost:8081/consultas/cancelada/2",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"consultas",
+								"cancelada",
+								"2"
+							]
+						},
+						"description": "Através do ID da consulta dada na requisição a marca como CANCELADA."
+					},
+					"response": []
+				}
+			],
+			"description": "Pasta que engloba todos os endpoints das consultas",
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "e0b4f7ae-ae7a-48aa-baf2-2fa4f639d80a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "af51300e-a940-4940-b158-6bad2a9efe54",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
