@@ -6,7 +6,6 @@ app.use(bodyparser());
 
 const medicos = [];
 const consultas = [];
-const consultasFinalizadas = [];
 
 const err = (err) => {
     if (err) {
@@ -137,6 +136,7 @@ const obterConsulta = (id, ctx) => {
     for (let consulta of consultas) {
         if (consulta.id === parseInt(id, 10)) return consulta; 
     }
+
     falhaRequisicao(ctx, 'ID não encontrado.', 404)
     return false
 }
@@ -149,13 +149,13 @@ const proximaConsulta = (id, ctx) => {
     } else {
         for(let consultaUrgente of consultas) {
             if (consultaUrgente.urgente) {
-                if (consultaUrgente.atendimento === proximoMedico.especialidade) {
+                if (consultaUrgente.atendimento === proximoMedico.especialidade && consultaUrgente.status === "pendente") {
                     return [proximoMedico, consultaUrgente];
                 }
             }
         }
         for(let consultaNaoUrgente of consultas) {
-            if (consultaNaoUrgente.atendimento === proximoMedico.especialidade) {
+            if (consultaNaoUrgente.atendimento === proximoMedico.especialidade && consultaUrgente.status === "pendente") {
                 return [proximoMedico, consultaNaoUrgente];
             }
         }
@@ -165,7 +165,7 @@ const proximaConsulta = (id, ctx) => {
 }
 
 const listarConsultas = () => {
-    return consultas;
+    return [consultas];
 }
 
 const consultaRealizada = (id, ctx) => {
@@ -175,37 +175,23 @@ const consultaRealizada = (id, ctx) => {
     } else {
     consultas[indexConsulta].status = 'ATENDIDO';
 
-    consultasFinalizadas.push(consultas[indexConsulta]);
-    consultas.splice(indexConsulta, 1);
-
     fs.writeFileSync('./writeFile/consultas.json', JSON.stringify(consultas, null, 2));
-    fs.writeFileSync('./writeFile/consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
 
-    return consultasFinalizadas[consultasFinalizadas.length-1];
+    return consultas[indexConsulta];
     }
 }
 
 const consultaCancelada = (id, ctx) => {
     const indexConsulta = consultas.indexOf(obterConsulta(id, ctx));
-    console.log(indexConsulta);
     if (indexConsulta === false || indexConsulta === -1) {
         return false
     } else {
     consultas[indexConsulta].status = 'CANCELADO';
 
-    consultasFinalizadas.push(consultas[indexConsulta]);
-    consultas.splice(indexConsulta, 1);
-
     fs.writeFileSync('./writeFile/consultas.json', JSON.stringify(consultas, null, 2));
-    fs.writeFileSync('./writeFile/consultasFinalizadas.json', JSON.stringify(consultasFinalizadas, null, 2));
-    
 
-    return consultasFinalizadas[consultasFinalizadas.length-1];
+    return consultas[indexConsulta];
     }
-}
-
-const listarFinalizadas = () => {
-    return consultasFinalizadas;
 }
 
 app.use((ctx) => {
@@ -329,15 +315,6 @@ app.use((ctx) => {
                         }
                     } else {
                         falhaRequisicao(ctx, 'Requisição mal formada. Insira um ID que seja um número.' , 400);
-                        break;
-                    }
-                
-                case (subPath[2] === 'finalizadas'):
-                    if (method === 'GET') {
-                        sucessoRequisicao(ctx, listarFinalizadas(), 200);
-                        break;
-                    } else {
-                        falhaRequisicao(ctx, 'Método não permitido' , 405);
                         break;
                     }
                 
