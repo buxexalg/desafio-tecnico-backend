@@ -34,7 +34,7 @@ const falhaRequisicao = (ctx, mensagem, codigoREST = 404) => {
 
 const cadastrarMedico = (ctx) => {
     const medicoJSON = ctx.request.body;
-    if (!medicoJSON.especialidade || medicoJSON.especialidade.trim() === '' || medicoJSON.especialidade === null) {
+    if (!medicoJSON.especialidade) {
         falhaRequisicao(ctx,'Adicione pelo menos uma especialidade para cadastrar um médico.', 400);
         return false;
     } else {
@@ -68,7 +68,7 @@ const atualizarMedico = (id, ctx) => {
     if (medicoJSON.id) {
         falhaRequisicao(ctx, 'Não é possível alterar o valor de ID. Insira os dados do médico sem o ID.', 403)
         return false;
-    } else if (!medicoJSON.especialidade || !medicoJSON.especialidade.trim() === '' || !medicoJSON.especialidade === null) {
+    } else if (!medicoJSON.especialidade) {
         falhaRequisicao(ctx, 'Insira uma propriedade válida para atualização.', 400)
         return false;
     } else {
@@ -103,16 +103,16 @@ const removerMedico = (id, ctx) => {
 
 const cadastrarConsulta = (ctx) => {
     const consultaJSON = ctx.request.body;
-    if (!consultaJSON.nome || consultaJSON.nome.trim() === '' || consultaJSON.nome === null) {
+    if (!consultaJSON.nome) {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
-    } else if (!consultaJSON.raca || consultaJSON.raca.trim() === '' || consultaJSON.raca === null) {
+    } else if (!consultaJSON.raca) {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
-    } else if (typeof consultaJSON.urgente !== 'boolean' || consultaJSON.especie === null) {
+    } else if (!consultaJSON.urgente !== 'boolean') {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
-    } else if (!consultaJSON.atendimento || consultaJSON.atendimento.trim() === '' || consultaJSON.atendimento === null) {
+    } else if (!consultaJSON.atendimento) {
         falhaRequisicao(ctx, 'Insira corretamente todos os dados necessários.', 400);
         return false;
     }
@@ -247,7 +247,8 @@ app.use((ctx) => {
                         break;
                     
                     case 'DELETE':
-                        removerMedico(ctx, subPath[2]) ? sucessoRequisicao(ctx, removerMedico(subPath[2], ctx), 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
+                        const medicoRemovido = removerMedico(subPath[2], ctx);
+                        medicoRemovido ? sucessoRequisicao(ctx, medicoRemovido, 200) : falhaRequisicao(ctx, 'ID não encontrado.', 404);
                         break;
 
                     default:
